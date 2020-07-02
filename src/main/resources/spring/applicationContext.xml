@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <context:component-scan base-package="com.ricky">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+    <!--    引入外部资源-->
+    <context:property-placeholder location="file:/home/judge/etc/roj.properties"></context:property-placeholder>
+    <!--    配置数据源-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="user" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+        <property name="driverClass" value="${jdbc.driver}"></property>
+        <property name="jdbcUrl" value="${jdbc.url}"></property>
+        <property name="minPoolSize" value="${jdbc.minPoolsize}"></property>
+        <property name="maxPoolSize" value="${jdbc.maxPoolsize}"></property>
+    </bean>
+    <!--    配置mybatis管理数据库-->
+    <!--    配置SqlSessionFactory-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"></property>
+        <property name="configLocation" value="classpath:mybatis/mybatis.xml"></property>
+        <property name="mapperLocations" value="classpath:mybatis/Dao/*.xml"></property>
+    </bean>
+    <!--    配置Dao层扫描包,实现动态的将Dao接口存入IOC容器中-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="basePackage" value="com.ricky.Dao"></property>
+    </bean>
+
+    <!--    配置事务管理器,管理数据源中的链接关闭和提交-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <aop:config>
+        <aop:pointcut id="txPoint" expression="execution(* com.ricky.Service.*.*(..))"/>
+        <aop:advisor advice-ref="myTx" pointcut-ref="txPoint"></aop:advisor>
+    </aop:config>
+    <tx:advice id="myTx" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="*" rollback-for="java.lang.Exception"/>
+            <tx:method name="get*" read-only="true"></tx:method>
+        </tx:attributes>
+    </tx:advice>
+
+    <bean id="database" class="com.ricky.Bean.ConfigBean">
+        <property name="data_home" value="${data.home}"/>
+        <property name="emailUrl" value="${emailUrl}"/>
+        <property name="emailHost" value="${emailHost}"/>
+        <property name="emailPass" value="${emailPass}"/>
+    </bean>
+</beans>

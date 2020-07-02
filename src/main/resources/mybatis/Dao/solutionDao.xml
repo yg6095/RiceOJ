@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ricky.Dao.ISolutionDao">
+<!--    public List<Solution> getAll();-->
+    <select id="getAll" resultType="com.ricky.Bean.Solution">
+        select sol.*, ce.error, code.source from (solution sol left join compileinfo ce
+            on sol.solution_id = ce.solution_id) left join source_code code
+            on sol.solution_id = code.solution_id where contest_id = 0
+    </select>
+    
+<!--   public void InsertSolution(Solution solution);-->
+    <insert id="InsertSolution" parameterType="com.ricky.Bean.Solution">
+        <selectKey resultType="int" order="AFTER" keyColumn="solution_id" keyProperty="solution_id">
+            select last_insert_id()
+        </selectKey>
+        insert into solution values(null,#{problem_id},#{user_id},#{time},#{memory},#{in_date},#{result},#{language},
+            #{contest_id},#{num},#{code_length},null,#{pass_rate},#{judger})
+    </insert>
+
+<!--   public void InsertSource(Solution solution);-->
+    <insert id="InsertSource" parameterType="com.ricky.Bean.Solution">
+        insert into source_code values(#{solution_id}, #{source})
+    </insert>
+
+<!--    public List<Integer> getACProblemById(String user_id);-->
+    <select id="getACProblemById" parameterType="string" resultType="int">
+        select distinct problem_id from solution where user_id = #{user_id} and result = 4
+    </select>
+
+<!--    public Integer getACCount(String user_id);-->
+    <select id="getACCount" resultType="int" parameterType="String">
+        select count(*) from solution where user_id = #{user_id} and result = 4
+    </select>
+
+<!--    public List<Integer> getAllSubmitById(String user_id);-->
+    <select id="getAllSubmitById" parameterType="String" resultType="int">
+        select distinct problem_id from solution where user_id = #{user_id}
+    </select>
+<!--List<Solution> getContestStatusById(Integer contest_id);-->
+    <select id="getContestStatusById" resultType="com.ricky.Bean.Solution">
+        select sol.*, ce.error, code.source from (solution sol left join compileinfo ce
+            on sol.solution_id = ce.solution_id) left join source_code code
+            on sol.solution_id = code.solution_id where contest_id = #{contest_id}
+    </select>
+<!--    List<Integer> getContestACByUserId(Contest_User contest_user);-->
+    <select id="getContestACByUserId" parameterType="com.ricky.Bean.Contest_User" resultType="int">
+        select distinct num from solution where user_id=#{user_id} and contest_id = #{contest_id} and result = 4;
+    </select>
+    <!--    List<Integer> getContestSubByUserId(Contest_User contest_user);-->
+    <select id="getContestSubByUserId" parameterType="com.ricky.Bean.Contest_User" resultType="int">
+        select num from solution where user_id=#{user_id} and contest_id = #{contest_id};
+    </select>
+<!--    int checkACByUser(@Param("contest_problem")Contest_Problem contest_problem, @Param("user_id") String s,
+                      @Param("start_time") Date start_time, @Param("end_time") Date end_time);-->
+    <select id="checkACByUser" resultType="com.ricky.Bean.Solution">
+        select * from solution where contest_id=#{contest_problem.contest_id} and num = #{contest_problem.num}
+            and user_id = #{user_id} and result = 4 and in_date between #{start_time} and #{end_time}
+    </select>
+
+<!--    int getSubByUser(@Param("contest_problem")Contest_Problem contest_problem, @Param("user_id")String s,
+                     @Param("start_time") Date start_time, @Param("end_time") Date end_time);-->
+    <select id="getSubByUser" resultType="com.ricky.Bean.Solution">
+        select * from solution where contest_id=#{contest_problem.contest_id} and num = #{contest_problem.num}
+            and user_id = #{user_id} and in_date between #{start_time} and #{end_time}
+    </select>
+
+<!--    Date getLastACDate(@Param("contest_problem")Contest_Problem contest_problem, @Param("user_id")String s,
+                       @Param("start_time") Date start_time, @Param("end_time") Date end_time);-->
+    <select id="getLastACDate" resultType="java.util.Date">
+        select max(in_date) from solution where contest_id=#{contest_problem.contest_id} and num = #{contest_problem.num}
+            and user_id = #{user_id} and result = 4 and in_date between #{start_time} and #{end_time}
+    </select>
+
+<!--     List<Solution> getFirstByUser(@Param("contest_problem")Contest_Problem contest_problem,
+                                  @Param("start_time") Date start_time, @Param("end_time") Date end_time);-->
+    <select id="getFirstByUser" resultType="com.ricky.Bean.Solution">
+        select * from solution where contest_id=#{contest_problem.contest_id} and num = #{contest_problem.num}
+            and result = 4 and in_date &lt;#{contest_problem.ac_Date} and in_date between #{start_time} and #{end_time}
+    </select>
+
+<!--    public void deleteContestSubmit(Integer contest_id);-->
+    <delete id="deleteContestSubmit">
+        delete from solution where contest_id = #{contest_id}
+    </delete>
+
+</mapper>

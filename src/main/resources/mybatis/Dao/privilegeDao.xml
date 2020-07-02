@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ricky.Dao.IPrivilegeDao">
+<!--   public List<User> getAllPrivilege();-->
+    <select id="getAllPrivilege" resultType="com.ricky.Bean.User">
+        select * from privilege
+    </select>
+
+<!--    public void Delete(String user_id);-->
+    <delete id="Delete" parameterType="string">
+        delete from privilege where user_id = #{user_id}
+    </delete>
+
+<!--    public void Insert(String user_id);-->
+    <insert id="Insert" parameterType="string">
+        Insert privilege values(#{user_id}, 'administrator', 'N')
+    </insert>
+<!--    public String getPrivilegeById(String user_id);-->
+    <select id="getPrivilegeById" parameterType="string" resultType="string">
+        select rightstr from privilege where user_id = #{user_id};
+    </select>
+
+</mapper>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ricky.Dao.IContestDao">
+
+    <resultMap id="contestMap" type="com.ricky.Bean.Contest">
+        <id property="contest_id" column="contest_id" javaType="int"></id>
+        <result property="_private" column="private" javaType="int"></result>
+        <association property="problem_ids" column="contest_id" select="com.ricky.Dao.IContestDao.getAllProblemIdsByContestId"></association>
+        <association property="users" column="contest_id" select="com.ricky.Dao.IContestDao.getAllUserByContestId"></association>
+    </resultMap>
+
+<!--    public Contest getContestById(Integer contest_id);-->
+    <select id="getContestById" resultMap="contestMap">
+        select * from contest where contest_id = #{contest_id}
+    </select>
+
+<!--    public List<Contest_Problem> getAllProblemIdsByContestId(Integer contest_id);-->
+    <select id="getAllProblemIdsByContestId" resultType="com.ricky.Bean.Contest_Problem">
+        select * from contest_problem where contest_id = #{id} order by num
+    </select>
+
+<!--    public void InsertContestProblem(Contest_problem contest_problem);-->
+    <insert id="InsertContestProblem" parameterType="com.ricky.Bean.Contest_Problem">
+        insert contest_problem values (#{problem_id}, #{contest_id},#{title},#{num},#{c_accepted},#{c_submit})
+    </insert>
+
+<!--    public void InsertContest(Contest contest);-->
+    <insert id="InsertContest" parameterType="com.ricky.Bean.Contest">
+        <selectKey keyProperty="contest_id" keyColumn="contest_id" order="AFTER" resultType="int">
+            select last_insert_id()
+        </selectKey>
+        insert contest values(null,#{title},#{start_time},#{end_time},#{description},#{_private},#{password},#{user_id},#{rg_time})
+    </insert>
+
+<!--    public void getAllUserByContestId(Integer contest_id);-->
+    <select id="getAllUserByContestId" resultType="String">
+        select user_id from contest_user where contest_id=#{contest_id}
+    </select>
+
+<!--    public void InsertContestUser(String user_id);-->
+    <insert id="InsertContestUser" parameterType="com.ricky.Bean.Contest_User">
+        insert contest_user values (#{contest_id},#{user_id},#{rg_time})
+    </insert>
+
+    <!--    List<Contest> getFutureContest();-->
+    <select id="getFutureContest" resultMap="contestMap">
+        select * from contest where end_time &gt;=now();
+    </select>
+    <!--    public List<Contest> getEndContest();-->
+    <select id="getEndContest" resultMap="contestMap">
+        select * from contest where end_time &lt;now();
+    </select>
+<!--    public List<Contest> getAllContests();-->
+    <select id="getAllContests" resultMap="contestMap">
+        select * from contest;
+    </select>
+<!--    public String getContestPasswordById(Integer contest_id);-->
+    <select id="getContestPasswordById" resultType="String">
+        select password from contest where contest_id = #{contest_id}
+    </select>
+
+<!--    public List<String> getContestsByUserId(String user_id);-->
+    <select id="getContestsByUserId" resultType="com.ricky.Bean.Contest">
+        select * from contest where contest_id in (select contest_id from contest_user where user_id = #{user_id})
+    </select>
+
+<!--    public void deleteContest(Integer contest_id);-->
+    <delete id="deleteContest" parameterType="int">
+        delete from contest where contest_id = #{contest_id}
+    </delete>
+
+<!--    public void deleteContestProblem(Integer contest_id);-->
+    <delete id="deleteContestProblem" parameterType="int">
+        delete from contest_problem where contest_id = #{contest_id}
+    </delete>
+
+<!--    public void deleteContestUser(Integer contest_id);-->
+    <delete id="deleteContestUser" parameterType="int">
+        delete from contest_user where contest_id = #{contest_id}
+    </delete>
+
+<!--    public void resetContest(Contest contest);-->
+    <update id="resetContest" parameterType="com.ricky.Bean.Contest">
+        update contest set title=#{title},start_time=#{start_time},end_time=#{end_time},description=#{description},
+            private=#{_private},password = #{password} where contest_id = #{contest_id}
+    </update>
+
+<!--    public List<Contest> getContestsByUser(String user_id);-->
+    <select id="getContestsByUser" resultMap="contestMap">
+        select * from contest where user_id = #{user_id};
+    </select>
+
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ricky.Dao.IUserDao">
+
+    <resultMap id="loginUser" type="com.ricky.Bean.User">
+        <id property="user_id" column="user_id"></id>
+        <association property="ac_problems" column="user_id" select="com.ricky.Dao.ISolutionDao.getACProblemById" javaType="list"></association>
+        <association property="sub_problems" column="user_id" select="com.ricky.Dao.ISolutionDao.getAllSubmitById" javaType="list"></association>
+        <association property="rankUser" column="user_id" select="com.ricky.Dao.IUserDao.getUserRankById" javaType="com.ricky.Bean.RankUser"></association>
+        <association property="rg_contests" column="user_id" select="com.ricky.Dao.IContestDao.getContestsByUserId" javaType="list"></association>
+    </resultMap>
+    <resultMap id="rankUser" type="com.ricky.Bean.RankUser">
+        <id property="user_id" column="user_id"></id>
+        <association property="solve" column="user_id" select="com.ricky.Dao.ISolutionDao.getACCount" javaType="int"></association>
+    </resultMap>
+
+<!--    public User UserLogin(User user);-->
+    <select id="UserLogin" resultMap="loginUser" >
+        select u.*,p.rightstr from users u left join privilege p on u.user_id = p.user_id where u.user_id = #{user_id} and u.password = #{password}
+    </select>
+
+<!--     public void UserInsert(User user);-->
+    <insert id="UserInsert" parameterType="com.ricky.Bean.User">
+        insert into users values(#{user_id},#{email},#{rankUser.submit},#{rankUser.solved},#{defunct},#{ip},#{accesstime},#{password},#{reg_time},#{nick},#{school}, #{rankUser.pass_rate})
+    </insert>
+
+<!--    public User getUserById(String user_id);-->
+    <select id="getUserById" resultType="com.ricky.Bean.User">
+        select * from users where user_id = #{id}
+    </select>
+
+<!--   public void UpdateUserLogin(String user_id);-->
+    <update id="UpdateUserLogin">
+        update users set accesstime = now() where user_id = #{user_id}
+    </update>
+
+<!--   public List<RankUser> getAllUserRank();-->
+    <select id="getAllUserRank" resultMap="rankUser">
+        SELECT s.*, (@i:=@i+1) rank FROM users s,(select @i:=0)t order by solved desc, pass_rate desc
+    </select>
+
+<!--   public RankUser getUserRankById(String user_id);-->
+    <select id="getUserRankById" resultMap="rankUser">
+        select u.* from (SELECT s.*, (@i:=@i+1) rank FROM users s,(select @i:=0)t order by solved desc, pass_rate desc)u where user_id = #{user_id}
+    </select>
+
+<!--    public void resetPassword(User user);-->
+    <update id="resetPassword" parameterType="com.ricky.Bean.User">
+        update users set password = #{password} where email = #{email} and user_id = #{user_id};
+    </update>
+
+<!--    public User checkUserEmail(User user);-->
+    <select id="checkUserEmail" parameterType="com.ricky.Bean.User" resultType="com.ricky.Bean.User">
+        select * from users where user_id = #{user_id} and email = #{email}
+    </select>
+<!--    public void resetInfo(User user);-->
+    <update id="resetInfo" parameterType="com.ricky.Bean.User">
+        update users set password = #{password}, nick = #{nick}, school=#{school}, email=#{email} where user_id = #{user_id}
+    </update>
+</mapper>

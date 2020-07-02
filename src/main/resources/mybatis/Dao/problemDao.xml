@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ricky.Dao.IProblemDao">
+<!--    public List<Problem> getAllPublic();-->
+    <select id="getAllPublic" resultType="com.ricky.Bean.Problem">
+        select * from problem where defunct = 'N'
+    </select>
+
+<!--    public List<Problem> getAll();-->
+    <select id="getAll" resultType="com.ricky.Bean.Problem">
+        select * from problem
+    </select>
+
+<!--    public void InsertProblem(Problem problem);-->
+    <insert id="InsertProblem" parameterType="com.ricky.Bean.Problem">
+        <selectKey keyProperty="problem_id" keyColumn="problem_id" order="AFTER" resultType="int">
+            select last_insert_id()
+        </selectKey>
+        insert into problem values(null,#{title},#{description},#{input},#{output},#{sample_input},
+            #{sample_output},#{spj},#{hint},#{source},#{in_date},#{time_limit},
+            #{memory_limit},#{defunct},#{accepted},#{submit},#{solved},#{provider})
+    </insert>
+
+<!--     public Problem Exists(Problem problem);-->
+    <select id="Exists" resultType="com.ricky.Bean.Problem" parameterType="com.ricky.Bean.Problem">
+        Select * from problem where title = #{title}
+    </select>
+
+<!--     public void DisplayProblem(Integer problem_id);-->
+    <update id="DisplayProblem" parameterType="int">
+        update problem set defunct = 'N' where problem_id = #{id}
+    </update>
+
+<!--     public void HiddenProblem(Integer problem_id);-->
+    <update id="HiddenProblem" parameterType="int">
+        update problem set defunct = 'Y' where problem_id = #{id}
+    </update>
+
+<!--    public void DeleteProblem(Integer problem_id);-->
+    <delete id="DeleteProblem" parameterType="int">
+        delete from problem where problem_id = #{id}
+    </delete>
+
+<!--    public Problem getProblemById(Integer problem_id);-->
+    <select id="getProblemById" parameterType="int" resultType="com.ricky.Bean.Problem">
+        select * from problem where problem_id = #{problem_id}
+    </select>
+
+<!--    List<Problem> getProblemsByList(List<Integer> problem_ids);-->
+    <select id="getProblemsByList" resultType="com.ricky.Bean.Problem">
+        select * from problem where problem_id in
+        <foreach collection="problems" item="problem" open="(" close=")" separator=",">
+            #{problem.problem_id}
+        </foreach>
+    </select>
+
+<!--    public void resetProblem(Problem problem);-->
+    <update id="resetProblem" parameterType="com.ricky.Bean.Problem">
+        update problem set title=#{title},description=#{description},input=#{input},output=#{output},
+            sample_input=#{sample_input},sample_output=#{sample_output},spj=#{spj},hint=#{hint},source=#{source},
+            in_date=#{in_date},time_limit=#{time_limit},memory_limit=#{memory_limit},defunct=#{defunct},
+            accepted=#{accepted},submit=#{submit},solved=#{solved},provider=#{provider} where problem_id = #{problem_id}
+    </update>
+
+<!--     public List<Problem> getProblemsByUser(String user_id);-->
+    <select id="getProblemsByUser" resultType="com.ricky.Bean.Problem">
+         select * from problem where provider = #{user_id}
+    </select>
+</mapper>
